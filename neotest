@@ -25,6 +25,18 @@ NEOGET_OPTIONS="-ix"
 MILESTONE=""
 NIGHTLY=""
 
+function usage {
+    SCRIPT=$(basename $0)
+    echo "Usage: ${SCRIPT} <command> <version> [<version> ...]"
+    echo ""
+    echo "Test runner for Neo4j clients."
+    echo ""
+    echo "Example:"
+    echo "  ${SCRIPT} ./runtests.sh 2.3.0 2.2.6 nightly"
+    echo ""
+    echo "Report bugs to nigel@neotechnology.com"
+}
+
 function download_and_start {
     VERSION=$1
     ${NEOKIT}/neoget "${NEOGET_OPTIONS}" ${VERSION} > /dev/null
@@ -42,6 +54,19 @@ function stop_and_exit {
     stop ${VERSION}
     exit ${EXIT_STATUS}
 }
+
+while getopts ":fh" OPTION
+do
+  case ${OPTION} in
+    f)
+      NEOGET_OPTIONS="-i"
+      ;;
+    h)
+      usage
+      exit
+      ;;
+  esac
+done
 
 while getopts ":ce" OPTION
 do
