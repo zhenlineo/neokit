@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+
+# Copyright (c) 2002-2015 "Neo Technology,"
+# Network Engine for Objects in Lund AB [http://neotechnology.com]
+#
+# This file is part of Neo4j.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+DIST="http://dist.neo4j.org"
+MILESTONE_DIST="http://dist.neo4j.org"
+NIGHTLY_DIST="http://alpha.neohq.net/dist"
+VERSIONS="2.3.0 2.2.6 2.1.8 2.0.4"
+MILESTONE_VERSION="3.0.0-M01"
+NIGHTLY_VERSION="3.0.0-M01-NIGHTLY"
+EDITION="community"
+VERSION="2.3.0"
+
+NEOKIT_HOME="${HOME}/.neokit"
+NEOKIT_DIST="${NEOKIT_HOME}/dist"
+NEOKIT_RUN="${NEOKIT_HOME}/run"
+
+function set_archive {
+    ARCHIVE_KEY="${EDITION}-${VERSION}"
+    ARCHIVE_NAME="neo4j-${ARCHIVE_KEY}-unix.tar.gz"
+    DOWNLOAD_DIR="$1"
+    if [ "${DOWNLOAD_DIR}" == "" ]
+    then
+        ARCHIVE_PATH="${ARCHIVE_NAME}"
+    else
+        mkdir -p ${DOWNLOAD_DIR} 2> /dev/null
+        ARCHIVE_PATH="${DOWNLOAD_DIR}/${ARCHIVE_NAME}"
+    fi
+    ARCHIVE_URL="${DIST}/${ARCHIVE_NAME}"
+}

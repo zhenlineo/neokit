@@ -1,0 +1,103 @@
+#!/usr/bin/env bash
+
+# Copyright (c) 2002-2015 "Neo Technology,"
+# Network Engine for Objects in Lund AB [http://neotechnology.com]
+#
+# This file is part of Neo4j.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+source "$(dirname $0)/.neoenv"
+
+NEOKIT=$(dirname $0)
+EXIT_STATUS=0
+NEOGET_OPTIONS="-ix"
+MILESTONE=""
+NIGHTLY=""
+
+function download_and_start {
+    VERSION=$1
+    if [ "${NIGHTLY}" != "" ]
+    then
+        ${NEOKIT}/neoget "${NEOGET_OPTIONS}${NIGHTLY}" > /dev/null
+    elif [ "${MILESTONE}" != "" ]
+    then
+        ${NEOKIT}/neoget "${NEOGET_OPTIONS}${MILESTONE}" > /dev/null
+    else
+        ${NEOKIT}/neoget "${NEOGET_OPTIONS}" ${VERSION} > /dev/null
+    fi
+    ${NEOKIT}/neoctl unzip ${VERSION}
+    ${NEOKIT}/neoctl start ${VERSION}
+}
+
+function stop {
+    VERSION=$1
+    ${NEOKIT}/neoctl stop ${VERSION}
+}
+
+function stop_and_exit {
+    VERSION=$1
+    stop ${VERSION}
+    exit ${EXIT_STATUS}
+}
+
+while getopts ":cemn" OPTION
+do
+  case ${OPTION} in
+    c)
+      NEOGET_OPTIONS="${NEOGET_OPTIONS}c"
+      ;;
+    e)
+      NEOGET_OPTIONS="${NEOGET_OPTIONS}e"
+      ;;
+    m)
+      MILESTONE="m"
+      VERSIONS=${MILESTONE_VERSION}
+      ;;
+    n)
+      NIGHTLY="n"
+      VERSIONS=${NIGHTLY_VERSION}
+      ;;
+    \?)
+      echo "Invalid option: -${OPTARG}" >&2
+      ;;
+  esac
+done
+
+shift $(($OPTIND - 1))
+COMMAND=$@
+for VERSION in ${VERSIONS}
+do
+    echo "======================================================================"
+    echo "=== Neo4j ${VERSION}"
+    echo "======================================================================"
+
+    trap stop_and_exit SIGINT SIGTERM
+    download_and_start ${VERSION}
+
+    echo "----------------------------------------------------------------------"
+    ${COMMAND}
+    EXIT_STATUS=$?
+    echo "----------------------------------------------------------------------"
+
+    trap - SIGINT SIGTERM
+    if [ ${EXIT_STATUS} -eq 0 ]
+    then
+        stop ${VERSION}
+    else
+        stop_and_exit ${VERSION}
+    fi
+
+    echo ""
+    echo ""
+done
