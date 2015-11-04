@@ -27,15 +27,7 @@ NIGHTLY=""
 
 function download_and_start {
     VERSION=$1
-    if [ "${NIGHTLY}" != "" ]
-    then
-        ${NEOKIT}/neoget "${NEOGET_OPTIONS}${NIGHTLY}" > /dev/null
-    elif [ "${MILESTONE}" != "" ]
-    then
-        ${NEOKIT}/neoget "${NEOGET_OPTIONS}${MILESTONE}" > /dev/null
-    else
-        ${NEOKIT}/neoget "${NEOGET_OPTIONS}" ${VERSION} > /dev/null
-    fi
+    ${NEOKIT}/neoget "${NEOGET_OPTIONS}" ${VERSION} > /dev/null
     ${NEOKIT}/neoctl unzip ${VERSION}
     ${NEOKIT}/neoctl start ${VERSION}
 }
@@ -51,7 +43,7 @@ function stop_and_exit {
     exit ${EXIT_STATUS}
 }
 
-while getopts ":cemn" OPTION
+while getopts ":ce" OPTION
 do
   case ${OPTION} in
     c)
@@ -60,14 +52,6 @@ do
     e)
       NEOGET_OPTIONS="${NEOGET_OPTIONS}e"
       ;;
-    m)
-      MILESTONE="m"
-      VERSIONS=${MILESTONE_VERSION}
-      ;;
-    n)
-      NIGHTLY="n"
-      VERSIONS=${NIGHTLY_VERSION}
-      ;;
     \?)
       echo "Invalid option: -${OPTARG}" >&2
       ;;
@@ -75,11 +59,22 @@ do
 done
 
 shift $(($OPTIND - 1))
-COMMAND=$@
+COMMAND=$1
+shift
+if [ "$*" != "" ]
+then
+    VERSIONS="$*"
+else
+    set -- ${VERSIONS}
+    VERSIONS=$1
+fi
+
 for VERSION in ${VERSIONS}
 do
+    set_version
+
     echo "======================================================================"
-    echo "=== Neo4j ${VERSION}"
+    echo "=== Neo4j ${VERSION_NUMBER}"
     echo "======================================================================"
 
     trap stop_and_exit SIGINT SIGTERM

@@ -36,8 +36,6 @@ function usage {
     echo "  -h  display this help text"
     echo ""
     echo "Download Options:"
-    echo "  -m  select the latest milestone release for download"
-    echo "  -n  select the latest nightly build for download"
     echo "  -x  only download/install if the file does not already exist"
     echo ""
     echo "Edition Options:"
@@ -75,7 +73,7 @@ function list {
             echo "${ARCHIVE_NAME}"
         elif [ "${MODE}" == "version" ]
         then
-            echo "${VERSION}"
+            echo "${VERSION_NUMBER}"
         else
             echo "${ARCHIVE_URL}"
         fi
@@ -128,14 +126,6 @@ do
       ;;
     l)
       ACTION="list"
-      ;;
-    m)
-      DIST="${MILESTONE_DIST}"
-      VERSIONS="${MILESTONE_VERSION}"
-      ;;
-    n)
-      DIST="${NIGHTLY_DIST}"
-      VERSIONS="${NIGHTLY_VERSION}"
       ;;
     u)
       MODE="url"

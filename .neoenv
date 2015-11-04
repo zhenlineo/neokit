@@ -30,8 +30,24 @@ NEOKIT_HOME="${HOME}/.neokit"
 NEOKIT_DIST="${NEOKIT_HOME}/dist"
 NEOKIT_RUN="${NEOKIT_HOME}/run"
 
+function set_version {
+    if [ "${VERSION}" == "nightly" ]
+    then
+        VERSION_DIST=${NIGHTLY_DIST}
+        VERSION_NUMBER=${NIGHTLY_VERSION}
+    elif [ "${VERSION}" == "milestone" ]
+    then
+        VERSION_DIST=${MILESTONE_DIST}
+        VERSION_NUMBER=${MILESTONE_VERSION}
+    else
+        VERSION_DIST=${DIST}
+        VERSION_NUMBER=${VERSION}
+    fi
+}
+
 function set_archive {
-    ARCHIVE_KEY="${EDITION}-${VERSION}"
+    set_version
+    ARCHIVE_KEY="${EDITION}-${VERSION_NUMBER}"
     ARCHIVE_NAME="neo4j-${ARCHIVE_KEY}-unix.tar.gz"
     DOWNLOAD_DIR="$1"
     if [ "${DOWNLOAD_DIR}" == "" ]
@@ -41,5 +57,5 @@ function set_archive {
         mkdir -p ${DOWNLOAD_DIR} 2> /dev/null
         ARCHIVE_PATH="${DOWNLOAD_DIR}/${ARCHIVE_NAME}"
     fi
-    ARCHIVE_URL="${DIST}/${ARCHIVE_NAME}"
+    ARCHIVE_URL="${VERSION_DIST}/${ARCHIVE_NAME}"
 }
