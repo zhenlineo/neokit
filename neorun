@@ -27,9 +27,11 @@ NIGHTLY=""
 
 function usage {
     SCRIPT=$(basename $0)
-    echo "Usage: ${SCRIPT} <command> <version> [<version> ...]"
+    echo "Usage: ${SCRIPT} <command> [<version> [<version> ...]]"
     echo ""
-    echo "Test runner for Neo4j clients."
+    echo "Test runner for Neo4j clients. The command will be executed in"
+    echo "turn each Neo4j version specified. Version aliases 'milestone'"
+    echo "and 'nightly' may be used instead of specific version numbers."
     echo ""
     echo "Example:"
     echo "  ${SCRIPT} ./runtests.sh 2.3.0 2.2.6 nightly"

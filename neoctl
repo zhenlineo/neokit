@@ -21,14 +21,14 @@ source "$(dirname $0)/.neoenv"
 
 function usage {
     SCRIPT=$(basename $0)
-    echo "Usage: ${SCRIPT} <command> <version>"
+    echo "Usage: ${SCRIPT} <command> [<version>]"
     echo ""
-    echo "Controller tool for Neo4j service."
+    echo "Controller tool for Neo4j services."
     echo ""
     echo "Commands:"
-    echo "  unzip"
-    echo "  start"
-    echo "  stop"
+    echo "  unzip - unzip an installed package (will overwrite if necessary)"
+    echo "  start - start the Neo4j server"
+    echo "  stop  - stop the Neo4j server"
     echo ""
     echo "Report bugs to nigel@neotechnology.com"
 }
