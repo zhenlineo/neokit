@@ -33,6 +33,7 @@ from sys import argv, stdout, exit
 from getopt import getopt
 from os import path, name
 from zipfile import ZipFile
+from tarfile import TarFile
 from urlparse import urlparse
 
 
@@ -69,11 +70,16 @@ def main():
     stdout.write("Downloading %s...\n" % archive_url)
     urlretrieve(archive_url, archive_name)
 
-    if archive_name.endswith('zip') or archive_name.endswith('gz'):
+    if archive_name.endswith('.zip'):
         stdout.write("Unzipping %s...\n" % archive_name)
         zip_ref = ZipFile(archive_name, 'r')
         zip_ref.extractall(".")
         zip_ref.close()
+    elif archive_name.endswith('.tar.gz'):
+        stdout.write("Unarchiving %s...\n" % archive_name)
+        tar_ref = TarFile(archive_name, 'r')
+        tar_ref.extractall(".")
+        tar_ref.close()
 
 
 def print_help():
