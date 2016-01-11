@@ -17,7 +17,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-source "$(dirname $0)/.neoenv"
+source "$(dirname $(realpath $0))/.neoenv"
 
 function usage {
     SCRIPT=$(basename $0)
@@ -62,11 +62,13 @@ function unzip {
 function start {
     set_neo4j_home
     ${NEO4J_HOME}/bin/neo4j start
+    export NEO4J_PID=$(cat ${NEO4J_HOME}/data/neo4j-service.pid)
 }
 
 function stop {
     set_neo4j_home
     ${NEO4J_HOME}/bin/neo4j stop
+    unset NEO4J_PID
 }
 
 COMMAND=$1

@@ -17,9 +17,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-source "$(dirname $0)/.neoenv"
+source "$(dirname $(realpath $0))/.neoenv"
 
-NEOKIT=$(dirname $0)
+NEOKIT=$(dirname $(realpath $0))
 EXIT_STATUS=0
 NEOGET_OPTIONS="-ix"
 MILESTONE=""
