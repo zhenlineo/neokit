@@ -26,9 +26,10 @@ function usage {
     echo "Controller tool for Neo4j services."
     echo ""
     echo "Commands:"
-    echo "  unzip - unzip an installed package (will overwrite if necessary)"
-    echo "  start - start the Neo4j server"
-    echo "  stop  - stop the Neo4j server"
+    echo "  unzip    - unzip an installed package (will overwrite if necessary)"
+    echo "  start    - start the Neo4j server"
+    echo "  stop     - stop the Neo4j server"
+    echo "  password - set the initial password for the Neo4j server"
     echo ""
     echo "Report bugs to nigel@neotechnology.com"
 }
@@ -63,6 +64,20 @@ function start {
     set_neo4j_home
     ${NEO4J_HOME}/bin/neo4j start
     export NEO4J_PID=$(cat ${NEO4J_HOME}/data/neo4j-service.pid)
+    sleep 10  # TODO: poll for when server is actually available
+    if [ "${PASSWORD}" != "" ]
+    then
+        curl -X POST http://localhost:7474/user/neo4j/password \
+        -H "Authorization: Basic bmVvNGo6bmVvNGo= " \
+        -H "Content-Type: application/json" \
+        -d "{\"password\": \"${PASSWORD}\"}" \
+        --fail
+        EXIT_STATUS=$?
+        if [ ${EXIT_STATUS} -ne 0 ]
+        then
+            exit ${EXIT_STATUS}
+        fi
+    fi
 }
 
 function stop {
@@ -82,6 +97,12 @@ then
     unzip
 elif [ "${COMMAND}" == "start" ]
 then
+    if [ "$3" != "" ]
+    then
+        PASSWORD=$3
+    else
+        PASSWORD=""
+    fi
     start
 elif [ "${COMMAND}" == "stop" ]
 then

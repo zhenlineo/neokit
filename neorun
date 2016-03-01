@@ -43,7 +43,12 @@ function download_and_start {
     VERSION=$1
     ${NEOKIT}/neoget "${NEOGET_OPTIONS}" ${VERSION} > /dev/null
     ${NEOKIT}/neoctl unzip ${VERSION}
-    ${NEOKIT}/neoctl start ${VERSION}
+    if [ "${NEO4J_PASSWORD}" == "" ]
+    then
+        ${NEOKIT}/neoctl start ${VERSION}
+    else
+        ${NEOKIT}/neoctl start ${VERSION} ${NEO4J_PASSWORD}
+    fi
 }
 
 function stop {
