@@ -63,7 +63,12 @@ function unzip {
 function start {
     set_neo4j_home
     ${NEO4J_HOME}/bin/neo4j start
-    export NEO4J_PID=$(cat ${NEO4J_HOME}/data/neo4j-service.pid)
+    PID_FILE="${NEO4J_HOME}/run/neo4j.pid"
+    if [ ! -f ${PID_FILE} ]
+    then
+        PID_FILE="${NEO4J_HOME}/data/neo4j-service.pid"
+    fi
+    export NEO4J_PID=$(cat ${PID_FILE})
     sleep 10  # TODO: poll for when server is actually available
     if [ "${PASSWORD}" != "" ]
     then
