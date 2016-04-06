@@ -56,6 +56,11 @@ function stop {
     ${NEOKIT}/neoctl stop ${VERSION}
 }
 
+function home {
+    VERSION=$1
+    ${NEOKIT}/neoctl home ${VERSION}
+}
+
 function stop_and_exit {
     VERSION=$1
     stop ${VERSION}
@@ -113,7 +118,7 @@ do
     download_and_start ${VERSION}
 
     echo "----------------------------------------------------------------------"
-    ${COMMAND}
+    NEO4J_HOME="$(home ${VERSION})" ${COMMAND}
     EXIT_STATUS=$?
     echo "----------------------------------------------------------------------"
 

@@ -52,6 +52,11 @@ function set_neo4j_home {
     fi
 }
 
+function home {
+    set_neo4j_home
+    echo "${NEO4J_HOME}"
+}
+
 function unzip {
     set_run_dir
     rm -rf "${RUN_DIR}"
@@ -97,7 +102,10 @@ then
     VERSION=$2
 fi
 
-if [ "${COMMAND}" == "unzip" ]
+if [ "${COMMAND}" == "home" ]
+then
+    home
+elif [ "${COMMAND}" == "unzip" ]
 then
     unzip
 elif [ "${COMMAND}" == "start" ]
