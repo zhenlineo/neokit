@@ -38,8 +38,8 @@ from urlparse import urlparse
 
 
 DIST = "http://dist.neo4j.org"
-DEFAULT_URL = "http://alpha.neohq.net/dist/neo4j-enterprise-3.0.0-M01-NIGHTLY-unix.tar.gz"
-WIN_URL = "http://alpha.neohq.net/dist/neo4j-enterprise-3.0.0-M01-NIGHTLY-windows.zip"
+DEFAULT_URL = "http://alpha.neohq.net/dist/neo4j-enterprise-3.0.0-NIGHTLY-unix.tar.gz"
+WIN_URL = "http://alpha.neohq.net/dist/neo4j-enterprise-3.0.0-NIGHTLY-windows.zip"
 
 
 def main():
