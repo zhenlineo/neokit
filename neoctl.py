@@ -48,46 +48,49 @@ def main():
     except getopt.GetoptError as err:
         print(str(err))
         print_help()
-        exit(2)
-    for opt, arg in opts:
-        if opt == '-h':
-            print_help()
-            exit()
-        elif opt == "--start":
-            neo4j_home = arg
-            neo4j_start()
-        elif opt == "--stop":
-            neo4j_home = arg
-            neo4j_stop()
+        exit_code = 2
+    else:
+        exit_code = 0
+        for opt, arg in opts:
+            if opt == '-h':
+                print_help()
+            elif opt == "--start":
+                neo4j_home = arg
+                exit_code = neo4j_start() or 0
+            elif opt == "--stop":
+                neo4j_home = arg
+                exit_code = neo4j_stop() or 0
+            else:
+                print("Bad option %s" % opt)
+                exit_code = 1
+            if exit_code != 0:
+                break
+    exit(exit_code)
 
 
 def neo4j_start():
     if is_windows:
-        powershell(['Install-Neo4jServer', '-Neo4jServer', neo4j_home, '-Name neo4j-py;',
-                    'Start-Neo4jServer', '-Neo4jServer',neo4j_home, '-ServiceName neo4j-py'])
+        return powershell([ neo4j_home + '/bin/neo4j.bat install-service;', neo4j_home + '/bin/neo4j.bat start'])
     else:
         call([neo4j_home + "/bin/neo4j", "start"])
 
 
 def neo4j_stop():
     if is_windows:
-        powershell(['Stop-Neo4jServer', '-Neo4jServer', neo4j_home, '-ServiceName', 'neo4j-py;',
-                    'Uninstall-Neo4jServer', '-Neo4jServer', neo4j_home, '-ServiceName', 'neo4j-py'])
+        return powershell([neo4j_home + '/bin/neo4j.bat stop;', neo4j_home + '/bin/neo4j.bat uninstall-service'])
     else:
         call([neo4j_home+"/bin/neo4j", "stop"])
 
 
 def powershell(cmd):
 
-    cmd = ['powershell.exe',
-           '-ExecutionPolicy', 'RemoteSigned',
-           'Import-Module', neo4j_home+'/bin/Neo4j-Management.psd1;'] + cmd
+    cmd = ['powershell.exe'] + cmd
     p = Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=PIPE)
     out, err = p.communicate()
     return_code = p.wait()
     print(out)
     print(err)
-    print(return_code)
+    return return_code
 
 
 def print_help():
