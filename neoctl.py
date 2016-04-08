@@ -20,31 +20,36 @@
 
 """
 Usage:   neoctl.py <cmd=arg>
-         --start=path/to/neo4j/home: start neo4j
-         --stop=path/to/neo4j/home : stop neo4j
-         -h                        : show this help message
+         --start=path/to/neo4j/home       : start neo4j
+         --stop=path/to/neo4j/home        : stop neo4j
+         --update-password=s3cr3tP4ssw0rd : update the neo4j password
+         -h                               : show this help message
 
 Example: neoctl.py --start=./neo4j-enterprise-3.0.0-M01
          neoctl.py -h
 """
 
 from __future__ import print_function
+from json import dumps as json_dumps
+from base64 import b64encode
 from sys import argv, exit
 from os import name
 from getopt import getopt
 from subprocess import call, Popen, PIPE
+try:
+    from urllib.request import Request, urlopen, HTTPError
+except ImportError:
+    from urllib2 import Request, urlopen, HTTPError
 
 is_windows = (name == 'nt')
-neo4j_home = '.'
 
 
 def main():
-    global neo4j_home
     if len(argv) <= 1:
         print_help()
         exit()
     try:
-        opts, args = getopt(argv[1:], "h", ["start=", "stop="])
+        opts, args = getopt(argv[1:], "h", ["start=", "stop=", "update-password="])
     except getopt.GetoptError as err:
         print(str(err))
         print_help()
@@ -55,11 +60,11 @@ def main():
             if opt == '-h':
                 print_help()
             elif opt == "--start":
-                neo4j_home = arg
-                exit_code = neo4j_start() or 0
+                exit_code = neo4j_start(neo4j_home=arg) or 0
             elif opt == "--stop":
-                neo4j_home = arg
-                exit_code = neo4j_stop() or 0
+                exit_code = neo4j_stop(neo4j_home=arg) or 0
+            elif opt == "--update-password":
+                exit_code = neo4j_update_password("localhost", 7474, "neo4j", "neo4j", new_password=arg) or 0
             else:
                 print("Bad option %s" % opt)
                 exit_code = 1
@@ -68,18 +73,31 @@ def main():
     exit(exit_code)
 
 
-def neo4j_start():
+def neo4j_start(neo4j_home):
     if is_windows:
-        return powershell([ neo4j_home + '/bin/neo4j.bat install-service;', neo4j_home + '/bin/neo4j.bat start'])
+        return powershell([neo4j_home + '/bin/neo4j.bat install-service;', neo4j_home + '/bin/neo4j.bat start'])
     else:
         call([neo4j_home + "/bin/neo4j", "start"])
 
 
-def neo4j_stop():
+def neo4j_stop(neo4j_home):
     if is_windows:
         return powershell([neo4j_home + '/bin/neo4j.bat stop;', neo4j_home + '/bin/neo4j.bat uninstall-service'])
     else:
         call([neo4j_home+"/bin/neo4j", "stop"])
+
+
+def neo4j_update_password(host, http_port, user, password, new_password):
+    request = Request("http://%s:%s/user/neo4j/password" % (host, http_port),
+                      json_dumps({"password": new_password}, ensure_ascii=True).encode("utf-8"),
+                      {"Authorization": "Basic " + b64encode((user + ":" + password).encode("utf-8")).decode("ascii"),
+                       "Content-Type": "application/json"})
+    try:
+        f = urlopen(request)
+        f.read()
+        f.close()
+    except HTTPError as error:
+        raise RuntimeError("Cannot update password [%s]" % error)
 
 
 def powershell(cmd):
