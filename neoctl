@@ -74,7 +74,7 @@ function start {
         PID_FILE="${NEO4J_HOME}/data/neo4j-service.pid"
     fi
     export NEO4J_PID=$(cat ${PID_FILE})
-    sleep 10  # TODO: poll for when server is actually available
+    sleep 30  # TODO: poll for when server is actually available
     if [ "${PASSWORD}" != "" ]
     then
         curl -X POST http://localhost:7474/user/neo4j/password \
