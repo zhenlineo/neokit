@@ -21,11 +21,13 @@
 """
 Usage:   neoget.py <cmd> [arg]
          -v neo4j-version: download this specific neo4j version
+         -n neo4j-version: download this nightly neo4j version
          -l download-url : download neo4j provided by this url
          -h              : show this help message
 
 Example: neoget.py -v 2.3.1
          neoget.py -h
+         neoget.py -n 3.0.1
 """
 from __future__ import print_function
 from urllib import urlretrieve
@@ -38,8 +40,9 @@ from urlparse import urlparse
 
 
 DIST = "http://dist.neo4j.org"
-DEFAULT_URL = "http://alpha.neohq.net/dist/neo4j-enterprise-3.0.0-NIGHTLY-unix.tar.gz"
-WIN_URL = "http://alpha.neohq.net/dist/neo4j-enterprise-3.0.0-NIGHTLY-windows.zip"
+NIGHTLY_DIST = "http://alpha.neohq.net/dist"
+DEFAULT_URL = "http://alpha.neohq.net/dist/neo4j-enterprise-3.0.1-NIGHTLY-unix.tar.gz"
+WIN_URL = "http://alpha.neohq.net/dist/neo4j-enterprise-3.0.1-NIGHTLY-windows.zip"
 
 
 def main():
@@ -48,7 +51,7 @@ def main():
     archive_name = path.split(urlparse(archive_url).path)[-1]
 
     try:
-        opts, args = getopt(argv[1:], "hv:l:")
+        opts, args = getopt(argv[1:], "hv:n:l:")
     except getopt.GetoptError as err:
         print(str(err))
         print_help()
@@ -63,6 +66,12 @@ def main():
             else:
                 archive_name = "neo4j-enterprise-%s-unix.tar.gz" % arg
             archive_url = "%s/%s" % (DIST, archive_name)
+        elif opt == '-n':
+            if is_windows:
+                archive_name = "neo4j-enterprise-%s-NIGHTLY-windows.zip" % arg
+            else:
+                archive_name = "neo4j-enterprise-%s-NIGHTLY-unix.tar.gz" % arg
+            archive_url = "%s/%s" % (NIGHTLY_DIST, archive_name)
         elif opt == '-l':
             archive_url = arg
             archive_name = path.split(urlparse(archive_url).path)[-1]
@@ -77,7 +86,7 @@ def main():
         zip_ref.close()
     elif archive_name.endswith('.tar.gz'):
         stdout.write("Unarchiving %s...\n" % archive_name)
-        tar_ref = TarFile(archive_name, 'r')
+        tar_ref = TarFile.open(archive_name)
         tar_ref.extractall(".")
         tar_ref.close()
 
