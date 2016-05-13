@@ -34,7 +34,7 @@ from json import dumps as json_dumps
 from base64 import b64encode
 from sys import argv, exit
 from os import name
-from getopt import getopt
+import getopt
 from subprocess import call, Popen, PIPE
 try:
     from urllib.request import Request, urlopen, HTTPError
@@ -49,7 +49,7 @@ def main():
         print_help()
         exit()
     try:
-        opts, args = getopt(argv[1:], "h", ["start=", "stop=", "update-password="])
+        opts, args = getopt.getopt(argv[1:], "h", ["start=", "stop=", "update-password="])
     except getopt.GetoptError as err:
         print(str(err))
         print_help()
@@ -101,7 +101,6 @@ def neo4j_update_password(host, http_port, user, password, new_password):
 
 
 def powershell(cmd):
-
     cmd = ['powershell.exe'] + cmd
     p = Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=PIPE)
     out, err = p.communicate()

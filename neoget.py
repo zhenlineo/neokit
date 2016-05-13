@@ -20,75 +20,98 @@
 
 """
 Usage:   neoget.py <cmd> [arg]
-         -v neo4j-version: download this specific neo4j version
-         -n neo4j-version: download this nightly neo4j version
+         -v neo4j-version: download this specific neo4j enterprise version
+         -n neo4j-version: download this neo4j enterprise nightly version
          -l download-url : download neo4j provided by this url
          -h              : show this help message
 
 Example: neoget.py -v 2.3.1
          neoget.py -h
-         neoget.py -n 3.0.1
+         neoget.py -n 3.0
 """
 from __future__ import print_function
 from urllib import urlretrieve
 from sys import argv, stdout, exit
-from getopt import getopt
+import getopt
 from os import path, name
 from zipfile import ZipFile
 from tarfile import TarFile
 from urlparse import urlparse
 
-
 DIST = "http://dist.neo4j.org"
-NIGHTLY_DIST = "http://alpha.neohq.net/dist"
-DEFAULT_URL = "http://alpha.neohq.net/dist/neo4j-enterprise-3.0.1-NIGHTLY-unix.tar.gz"
-WIN_URL = "http://alpha.neohq.net/dist/neo4j-enterprise-3.0.1-NIGHTLY-windows.zip"
+SNAPSHOT_DIST = "http://alpha.neohq.net/dist"
+SNAPSHOT30_UNIX_URL = "http://alpha.neohq.net/dist/neo4j-enterprise-3.0-SNAPSHOT-unix.tar.gz"
+SNAPSHOT30_WIN_URL = "http://alpha.neohq.net/dist/neo4j-enterprise-3.0-SNAPSHOT-windows.zip"
+
+is_windows = (name == 'nt')
 
 
 def main():
-    is_windows = (name == 'nt')
-    archive_url = WIN_URL if is_windows else DEFAULT_URL
-    archive_name = path.split(urlparse(archive_url).path)[-1]
-
     try:
-        opts, args = getopt(argv[1:], "hv:n:l:")
+        opts, args = getopt.getopt(argv[1:], "hv:s:l:")
     except getopt.GetoptError as err:
         print(str(err))
         print_help()
-        exit(2)
+        exit()
+
+    archive_url, archive_name = neo4j_default_archive()
+
     for opt, arg in opts:
         if opt == '-h':
             print_help()
             exit()
-        elif opt == '-v':
-            if is_windows:
-                archive_name = "neo4j-enterprise-%s-windows.zip" % arg
-            else:
-                archive_name = "neo4j-enterprise-%s-unix.tar.gz" % arg
-            archive_url = "%s/%s" % (DIST, archive_name)
-        elif opt == '-n':
-            if is_windows:
-                archive_name = "neo4j-enterprise-%s-NIGHTLY-windows.zip" % arg
-            else:
-                archive_name = "neo4j-enterprise-%s-NIGHTLY-unix.tar.gz" % arg
-            archive_url = "%s/%s" % (NIGHTLY_DIST, archive_name)
-        elif opt == '-l':
-            archive_url = arg
-            archive_name = path.split(urlparse(archive_url).path)[-1]
+        elif opt in ('-v', '-n', '-l'):
+            archive_url, archive_name = neo4j_archive(opt, arg)
+    try:
+        download(archive_url, archive_name)
+    finally:
+        ret = 0 if path.exists(archive_name) else 1
+        exit(ret)
 
+
+def neo4j_default_archive():
+    archive_url = SNAPSHOT30_WIN_URL if is_windows else SNAPSHOT30_UNIX_URL
+    archive_name = path.split(urlparse(archive_url).path)[-1]
+    return archive_url, archive_name
+
+
+def neo4j_archive(opt, arg):
+    archive_url, archive_name = '', ''
+
+    if opt == '-v':
+        if is_windows:
+            archive_name = "neo4j-enterprise-%s-windows.zip" % arg
+        else:
+            archive_name = "neo4j-enterprise-%s-unix.tar.gz" % arg
+        archive_url = "%s/%s" % (DIST, archive_name)
+    elif opt == '-n':
+        if is_windows:
+            archive_name = "neo4j-enterprise-%s-SNAPSHOT-windows.zip" % arg
+        else:
+            archive_name = "neo4j-enterprise-%s-SNAPSHOT-unix.tar.gz" % arg
+        archive_url = "%s/%s" % (SNAPSHOT_DIST, archive_name)
+    elif opt == '-l':
+        archive_url = arg
+        archive_name = path.split(urlparse(archive_url).path)[-1]
+    return archive_url, archive_name
+
+
+def download(archive_url, archive_name, extract_to_path='.'):
     stdout.write("Downloading %s...\n" % archive_url)
     urlretrieve(archive_url, archive_name)
 
     if archive_name.endswith('.zip'):
         stdout.write("Unzipping %s...\n" % archive_name)
         zip_ref = ZipFile(archive_name, 'r')
-        zip_ref.extractall(".")
+        zip_ref.extractall(extract_to_path)
         zip_ref.close()
     elif archive_name.endswith('.tar.gz'):
         stdout.write("Unarchiving %s...\n" % archive_name)
         tar_ref = TarFile.open(archive_name)
-        tar_ref.extractall(".")
+        tar_ref.extractall(extract_to_path)
+        untar_folder=tar_ref.getnames()[0]
         tar_ref.close()
+        return untar_folder
 
 
 def print_help():
