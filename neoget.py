@@ -39,9 +39,9 @@ from tarfile import TarFile
 from urlparse import urlparse
 
 DIST = "http://dist.neo4j.org"
-SNAPSHOT_DIST = "http://alpha.neohq.net/dist"
-SNAPSHOT30_UNIX_URL = "http://alpha.neohq.net/dist/neo4j-enterprise-3.0-SNAPSHOT-unix.tar.gz"
-SNAPSHOT30_WIN_URL = "http://alpha.neohq.net/dist/neo4j-enterprise-3.0-SNAPSHOT-windows.zip"
+NIGHTLY_DIST = "http://alpha.neohq.net/dist"
+NIGHTLY30_UNIX_URL = "http://alpha.neohq.net/dist/neo4j-enterprise-3.0-NIGHTLY-unix.tar.gz"
+NIGHTLY30_WIN_URL = "http://alpha.neohq.net/dist/neo4j-enterprise-3.0-NIGHTLY-windows.zip"
 
 is_windows = (name == 'nt')
 
@@ -70,7 +70,7 @@ def main():
 
 
 def neo4j_default_archive():
-    archive_url = SNAPSHOT30_WIN_URL if is_windows else SNAPSHOT30_UNIX_URL
+    archive_url = NIGHTLY30_WIN_URL if is_windows else NIGHTLY30_UNIX_URL
     archive_name = path.split(urlparse(archive_url).path)[-1]
     return archive_url, archive_name
 
@@ -86,10 +86,10 @@ def neo4j_archive(opt, arg):
         archive_url = "%s/%s" % (DIST, archive_name)
     elif opt == '-n':
         if is_windows:
-            archive_name = "neo4j-enterprise-%s-SNAPSHOT-windows.zip" % arg
+            archive_name = "neo4j-enterprise-%s-NIGHTLY-windows.zip" % arg
         else:
-            archive_name = "neo4j-enterprise-%s-SNAPSHOT-unix.tar.gz" % arg
-        archive_url = "%s/%s" % (SNAPSHOT_DIST, archive_name)
+            archive_name = "neo4j-enterprise-%s-NIGHTLY-unix.tar.gz" % arg
+        archive_url = "%s/%s" % (NIGHTLY_DIST, archive_name)
     elif opt == '-l':
         archive_url = arg
         archive_name = path.split(urlparse(archive_url).path)[-1]

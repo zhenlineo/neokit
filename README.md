@@ -2,79 +2,78 @@
 
 Tools for downloading, managing and testing Neo4j servers.
 
-- `neoget` - download and install Neo4j server packages
-- `neoctl` - start and stop Neo4j servers
-- `neorun` - run commands against one or more running servers
+- `neoget` - download and unarchive Neo4j server packages
+- `neoctl` - start and stop Neo4j servers and update default server password
+- `neorun` - start and stop a Neo4j server with guarantee of server fully started and stopped
 
 
 ## Neoget
-Neoget is a download script for fetching Neo4j server packages. To download the latest stable version of Neo4j, simply use:
-
+Neoget is a download script for fetching Neo4j server packages. To download the latest nightly version of Neo4j, simply use:
 ```
-neoget
+python neoget.py
 ```
+If successful, the downloaded package would be unarchived immediately following the download.
 
-If successful, the full name of the downloaded package will be displayed on the console immediately following the download.
-
-To install a Neo4j package for the current user (into `${HOME}/.neokit`), use `-i`:
-
+To install a specific Neo4j package version, use `-v` to specify the version:
 ```
-neoget -i
+python neoget.py -v 3.0.1
 ```
 
-The `-x` option can be used to carry out a download only if the requested file does not already exist. The default is to overwrite files with the same name.
-
-Specific versions can be obtained by providing the version numbers as arguments:
-
+The `-n` option can be used to carry out a download for the latest nightly version of Neo4j.
 ```
-neoget -i 2.2.6 2.1.4
+python neoget.py -n 3.0
 ```
+Then the archive with the version `3.0-NIGHTLY` would be downloaded to local disk
 
-Alternatively, the pseudo-versions `milestone` and `nightly` can be used in place of an actual number.
-
-The `-e` option forces a download of the Enterprise software; the Community edition (`-c`) is default:
-
+Alternatively, a url could also be used with option `-l` to directly download the Neo4j specified by the url
 ```
-neoget -e nightly
+python neoget.py -l http://alpha.neohq.net/dist/neo4j-enterprise-3.0-NIGHTLY-unix.tar.gz
 ```
 
 For a full help page, use `-h`:
-
 ```
-neoget -h
+python neoget.py -h
 ```
-
 
 ## Neoctl
-Neoctl is a controller for installed Neo4j packages (see `neoget -i`).
-
-Once downloaded, a package must be unzipped before use. This can be achieved with the `unzip` command:
-
-```
-neoctl unzip 2.3.0
-```
-
-Note that a package may be unzipped as often as required. Doing so will overwrite any existing set of files, essentially resetting the database to factory conditions.
+Neoctl is a controller for start and stop Neo4j packages. It also provides a method to update default neo4j password.
 
 To start a server, use the `start` command:
-
 ```
-neoctl start 2.3.0
+python neoctl.py --start=neo4j
 ```
 
 Similarly, to stop a server, use the `stop` command:
-
 ```
-neoctl stop 2.3.0
+python neoctl.py --stop=neo4j
+```
+
+To change the default passowrd of a Neo4j server, simply use
+```
+python neoctrl.py --update-passowrd=s3cr3tP4ssw0rd
 ```
 
 
 ## Neorun
-Neorun can be used to run a test script or other command against one or more running Neo4j servers. To do this, simply pass the command and the versions against which testing should occur. The command will be run once for each version listed:
+Neorun provides commands to start and stop a Neo4j server with the guarantee that the server is fully started and stopped when the script returns.
+The start command also exposes a command to download and install a specific Neo4j server if no Neo4j found locally,
+as well as an option to change the default server password after the start.
 
+To start a Neo4j server, simply use the following command:
 ```
-neorun ./my-test-script.sh 2.3.0 2.2.6
+python neorun.py --start=neo4j
 ```
+When the script returns, then the server is fully ready for any database tasks.
 
-Downloading and installing the required versions of Neo4j will be managed completely by this tool.
+If no Neo4j server is found in path `./neo4j`, then the default Neo4j server version used in `neoget.py` will be downloaded and installed to `./neo4j`.
+To specify other versions to download when a Neo4j is absent, use `-v`, `-n`, `-l` in a similar way as they are defined in `neoget.py`:
+```
+python neorun.py --start=neo4j -n 3.1 -p TOUFU
+```
+In the example above, the `-p` option is used to change the default Neo4j password after the server is ready.
+
+For stopping the server, simply use the `stop` command:
+```
+python neorun.py --stop=neo4j
+```
 

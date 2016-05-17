@@ -43,6 +43,9 @@ from os import path, rename
 import socket
 from time import time, sleep
 
+KNOWN_HOST = path.join(path.expanduser("~"), ".neo4j", "known_hosts")
+KNOWN_HOST_BACKUP = KNOWN_HOST + ".backup"
+
 
 class Enum(set):
     def __getattr__(self, name):
@@ -51,7 +54,6 @@ class Enum(set):
         raise AttributeError
 
 ServerStatus = Enum(["STARTED", "STOPPED" ])
-
 
 def main():
 
@@ -103,8 +105,11 @@ def handle_start(archive_url, archive_name, neo4j_home):
     if not path.exists(neo4j_home):
         folder_name=download(archive_url, archive_name, path.dirname(neo4j_home))
         if not path.exists(neo4j_home):
-            # the untared name is different from what user gives
+            # the untared name is different from what the user gives
             rename(folder_name, path.basename(neo4j_home))
+    if path.exists(KNOWN_HOST):
+        stdout.write("Found an existing known_host file, renaming it to known_host.backup.")
+        rename(KNOWN_HOST, KNOWN_HOST_BACKUP)
     return neo4j_start(neo4j_home) or test_neo4j_status()
 
 
